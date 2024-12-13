@@ -1,0 +1,331 @@
+---
+title: "DRTO_RNAseq_Analysis"
+author: "Erin Shilling"
+date: "2024-11-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages}
+#knitr::opts_chunk$set(echo = TRUE)
+#if (!require("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install("tximport")
+library(tximport)
+#BiocManager::install("DESeq2")
+library(DESeq2)
+library(tibble)
+library(VennDiagram)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+```
+
+Count Matrix Generation:
+First we read in our raw counts from Salmon and turn them into count matrices using Tximport.
+
+C. natans
+Read in the raw counts all Colpophyllia natans samples
+```{r counts cnat}
+#read in metadata sheet
+metadata = read.csv("C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/metadata.csv",header=TRUE)
+cnat_samples <- metadata[metadata$species == 'C. natans',]
+cnat_samples$colony_ID = as.factor(cnat_samples$colony_ID)
+cnat_samples$tissue_type = as.factor(cnat_samples$tissue_type)
+cnat_samples$month_tis_type = as.factor(cnat_samples$month_tis_type)
+cnat_samples$site = as.factor(cnat_samples$site)
+
+#read in quant.sf files; need to have file names match a row in your metadata sheet then call that column to align/pull the quant.sf file from each sample's respective folder that was output from salmon
+cnat_quant <- file.path("C:/Users/erin_/Documents/salmon_files/DRTO/cnat_quants", cnat_samples$salmon_ID, "quant.sf")
+
+#just renames files to 1-35, need to have that in my metadata sheet as well
+names(cnat_quant) = paste0("sample", 1:35)
+  all(file.exists(cnat_quant))
+
+#read in transcript to gene sheet that was modified from list of transcripts from transcriptome
+cnat_tx2genes=read.csv("C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/CNAT_t_g.csv")
+  
+#import
+cnat_txi = tximport(cnat_quant, type = "salmon", tx2gene = cnat_tx2genes, countsFromAbundance = "lengthScaledTPM")
+
+head(cnat_txi$counts)
+
+cnat_counts <- as.data.frame(cnat_txi$counts)
+
+#already saved, don't need to remake every time
+write.csv(cnat_counts, file = "C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/R/cnat_counts.csv",quote = FALSE)
+
+```
+
+C. natans symbionts
+All Breviolum
+```{r counts CNAT symbionts}
+#read in metadata sheet
+sym_metadata = read.csv("C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/symbiont_metadata.csv",header=TRUE)
+cnat_sym_samples <- sym_metadata[sym_metadata$species == 'C. natans',]
+cnat_sym_samples$colony_ID = as.factor(cnat_sym_samples$colony_ID)
+cnat_sym_samples$tissue_type = as.factor(cnat_sym_samples$tissue_type)
+cnat_sym_samples$month_tis_type = as.factor(cnat_sym_samples$month_tis_type)
+cnat_sym_samples$site = as.factor(cnat_sym_samples$site)
+
+#read in quant.sf files; need to have file names match a row in your metadata sheet then call that column to align/pull the quant.sf file from each sample's respective folder that was output from salmon
+cnat_sym_quant <- file.path("C:/Users/erin_/Documents/salmon_files/DRTO/cnat_sym_quants", cnat_sym_samples$salmon_ID, "quant.sf")
+
+#just renames files to 132-166, need to have that in my metadata sheet as well
+names(cnat_sym_quant) = paste0("sample", 132:166)
+  all(file.exists(cnat_sym_quant))
+
+#read in transcript to gene sheet that was modified from list of transcripts from transcriptome
+cnat_sym_tx2genes=read.csv("C:/Users/erin_/OneDrive - Texas State University/GitHub/symb_tgs/Bmin_t_g.csv")
+
+#import
+cnat_sym_txi = tximport(cnat_sym_quant, type = "salmon", tx2gene = cnat_sym_tx2genes, countsFromAbundance = "lengthScaledTPM")
+
+head(cnat_sym_txi$counts)
+
+cnat_sym_counts <- as.data.frame(cnat_sym_txi$counts)
+
+#already saved, don't need to remake every time
+write.csv(cnat_sym_counts, file = "C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/R/cnat_sym_counts.csv",quote = FALSE)
+
+```
+
+M. cavernosa
+Read in the raw counts all Montastraea cavernosa samples
+```{r counts mcav}
+#read in metadata sheet
+metadata = read.csv("C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/metadata.csv",header=TRUE)
+mcav_samples <- metadata[metadata$species == 'M. cavernosa',]
+mcav_samples$colony_ID = as.factor(mcav_samples$colony_ID)
+mcav_samples$tissue_type = as.factor(mcav_samples$tissue_type)
+mcav_samples$month_tis_type = as.factor(mcav_samples$month_tis_type)
+mcav_samples$site = as.factor(mcav_samples$site)
+
+#read in quant.sf files; need to have file names match a row in your metadata sheet then call that column to align/pull the quant.sf file from each sample's respective folder that was output from salmon
+mcav_quant <- file.path("C:/Users/erin_/Documents/salmon_files/DRTO/mcav_quants", mcav_samples$salmon_ID, "quant.sf")
+
+#just renames files to 1-35, need to have that in my metadata sheet as well
+names(mcav_quant) = paste0("sample", 36:66)
+  all(file.exists(mcav_quant))
+
+#read in transcript to gene sheet that was modified from list of transcripts from transcriptome
+mcav_tx2genes=read.csv("C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/MCAV_t_g.csv")
+  
+#import
+mcav_txi = tximport(mcav_quant, type = "salmon", tx2gene = mcav_tx2genes, countsFromAbundance = "lengthScaledTPM")
+
+head(mcav_txi$counts)
+
+mcav_counts <- as.data.frame(mcav_txi$counts)
+
+#already saved, don't need to remake every time
+write.csv(mcav_counts, file = "C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/R/mcav_counts.csv",quote = FALSE)
+```
+
+M. cavernosa symbionts
+Most Cladocopium, a couple Breviolum & Durusdinium
+Only looking at Cladocopium for now
+```{r counts MCAV C symbionts}
+#read in metadata sheet
+sym_metadata = read.csv("C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/symbiont_metadata.csv",header=TRUE)
+mcav_sym_samples <- sym_metadata[sym_metadata$species == 'M. cavernosa',]
+mcav_symC_samples <- mcav_sym_samples[mcav_sym_samples$clade == 'Cladocopium',]
+mcav_symC_samples$colony_ID = as.factor(mcav_symC_samples$colony_ID)
+mcav_symC_samples$tissue_type = as.factor(mcav_symC_samples$tissue_type)
+mcav_symC_samples$month_tis_type = as.factor(mcav_symC_samples$month_tis_type)
+mcav_symC_samples$site = as.factor(mcav_symC_samples$site)
+
+#read in quant.sf files; need to have file names match a row in your metadata sheet then call that column to align/pull the quant.sf file from each sample's respective folder that was output from salmon
+mcav_symC_quant <- file.path("C:/Users/erin_/Documents/salmon_files/DRTO/mcav_sym_quants/cladeC", mcav_symC_samples$salmon_ID, "quant.sf")
+
+#just renames files to 1-35, need to have that in my metadata sheet as well
+names(mcav_symC_quant) = paste0("sample", 167:195)
+  all(file.exists(mcav_symC_quant))
+
+#read in transcript to gene sheet that was modified from list of transcripts from transcriptome
+mcavC_tx2genes=read.csv("C:/Users/erin_/OneDrive - Texas State University/GitHub/symb_tgs/CY103_t_g.csv")
+  
+#import
+mcavC_txi = tximport(mcav_symC_quant, type = "salmon", tx2gene = mcavC_tx2genes, countsFromAbundance = "lengthScaledTPM")
+
+head(mcavC_txi$counts)
+
+mcav_symC_counts <- as.data.frame(mcavC_txi$counts)
+
+#already saved, don't need to remake every time
+write.csv(mcav_symC_counts, file = "C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/R/mcav_symC_counts.csv",quote = FALSE)
+
+```
+
+O. faveolata
+Read in the raw counts all Orbicella faveolata samples
+```{r counts ofav}
+#read in metadata sheet
+metadata = read.csv("C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/metadata.csv",header=TRUE)
+ofav_samples <- metadata[metadata$species == 'O. faveolata',]
+ofav_samples$colony_ID = as.factor(ofav_samples$colony_ID)
+ofav_samples$tissue_type = as.factor(ofav_samples$tissue_type)
+ofav_samples$month_tis_type = as.factor(ofav_samples$month_tis_type)
+ofav_samples$site = as.factor(ofav_samples$site)
+
+#read in quant.sf files; need to have file names match a row in your metadata sheet then call that column to align/pull the quant.sf file from each sample's respective folder that was output from salmon
+ofav_quant <- file.path("C:/Users/erin_/Documents/salmon_files/DRTO/ofav_quants", ofav_samples$salmon_ID, "quant.sf")
+
+#just renames files to 1-35, need to have that in my metadata sheet as well
+names(ofav_quant) = paste0("sample", 67:100)
+  all(file.exists(ofav_quant))
+
+#read in transcript to gene sheet that was modified from list of transcripts from transcriptome
+ofav_tx2genes=read.csv("C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/OFAV_t_g.csv")
+  
+#import
+ofav_txi = tximport(ofav_quant, type = "salmon", tx2gene = ofav_tx2genes, countsFromAbundance = "lengthScaledTPM")
+
+head(ofav_txi$counts)
+
+ofav_counts <- as.data.frame(ofav_txi$counts)
+
+#already saved, don't need to remake every time
+write.csv(ofav_counts, file = "C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/R/ofav_counts.csv",quote = FALSE)
+```
+
+
+O. faveolata symbionts
+Most Cladocopium, a couple Breviolum
+Only analyzing Cladocopium ones for now
+```{r counts OFAV Cladocopium}
+#read in metadata sheet
+sym_metadata = read.csv("C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/symbiont_metadata.csv",header=TRUE)
+ofav_sym_samples <- sym_metadata[sym_metadata$species == 'O. faveolata',]
+ofav_symC_samples <- ofav_sym_samples[ofav_sym_samples$clade == 'Cladocopium',]
+ofav_symC_samples$colony_ID = as.factor(ofav_symC_samples$colony_ID)
+ofav_symC_samples$tissue_type = as.factor(ofav_symC_samples$tissue_type)
+ofav_symC_samples$month_tis_type = as.factor(ofav_symC_samples$month_tis_type)
+ofav_symC_samples$site = as.factor(ofav_symC_samples$site)
+
+#read in quant.sf files; need to have file names match a row in your metadata sheet then call that column to align/pull the quant.sf file from each sample's respective folder that was output from salmon
+ofav_symC_quant <- file.path("C:/Users/erin_/Documents/salmon_files/DRTO/ofav_sym_quants/cladeC", ofav_symC_samples$salmon_ID, "quant.sf")
+
+#just renames files to 1-35, need to have that in my metadata sheet as well
+names(ofav_symC_quant) = paste0("sample", 196:226)
+  all(file.exists(ofav_symC_quant))
+
+#read in transcript to gene sheet that was modified from list of transcripts from transcriptome
+ofavC_tx2genes=read.csv("C:/Users/erin_/OneDrive - Texas State University/GitHub/symb_tgs/CY103_t_g.csv")
+  
+#import
+ofavC_txi = tximport(ofav_symC_quant, type = "salmon", tx2gene = ofavC_tx2genes, countsFromAbundance = "lengthScaledTPM")
+
+head(ofavC_txi$counts)
+
+ofav_symC_counts <- as.data.frame(ofavC_txi$counts)
+
+#already saved, don't need to remake every time
+write.csv(ofav_symC_counts, file = "C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/R/ofav_symC_counts.csv",quote = FALSE)
+
+```
+
+O. franksi
+Read in the raw counts all Orbicella franksi samples
+```{r counts ofra}
+
+#read in metadata sheet
+metadata = read.csv("C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/metadata.csv",header=TRUE)
+ofra_samples <- metadata[metadata$species == 'O. franksi',]
+ofra_samples$colony_ID = as.factor(ofra_samples$colony_ID)
+ofra_samples$tissue_type = as.factor(ofra_samples$tissue_type)
+ofra_samples$month_tis_type = as.factor(ofra_samples$month_tis_type)
+ofra_samples$site = as.factor(ofra_samples$site)
+
+#read in quant.sf files; need to have file names match a row in your metadata sheet then call that column to align/pull the quant.sf file from each sample's respective folder that was output from salmon
+ofra_quant <- file.path("C:/Users/erin_/Documents/salmon_files/DRTO/ofra_quants", ofra_samples$salmon_ID, "quant.sf")
+
+#just renames files to 1-35, need to have that in my metadata sheet as well
+names(ofra_quant) = paste0("sample", 101:131)
+  all(file.exists(ofra_quant))
+
+#read in transcript to gene sheet that was modified from list of transcripts from transcriptome
+ofra_tx2genes=read.csv("C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/OFRA_t_g.csv")
+  
+#import
+ofra_txi = tximport(ofra_quant, type = "salmon", tx2gene = ofra_tx2genes, countsFromAbundance = "lengthScaledTPM")
+
+head(ofra_txi$counts)
+
+ofra_counts <- as.data.frame(ofra_txi$counts)
+
+#already saved, don't need to remake every time
+write.csv(ofra_counts, file = "C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/R/ofra_counts.csv",quote = FALSE)
+```
+
+O. franksi symbionts
+All Cladocopium
+```{r counts OFRA Cladocopium}
+#read in metadata sheet
+sym_metadata = read.csv("C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/symbiont_metadata.csv",header=TRUE)
+ofra_sym_samples <- sym_metadata[sym_metadata$species == 'O. franksi',]
+ofra_sym_samples$colony_ID = as.factor(ofra_sym_samples$colony_ID)
+ofra_sym_samples$tissue_type = as.factor(ofra_sym_samples$tissue_type)
+ofra_sym_samples$month_tis_type = as.factor(ofra_sym_samples$month_tis_type)
+ofra_sym_samples$site = as.factor(ofra_sym_samples$site)
+
+#read in quant.sf files; need to have file names match a row in your metadata sheet then call that column to align/pull the quant.sf file from each sample's respective folder that was output from salmon
+ofra_sym_quant <- file.path("C:/Users/erin_/Documents/salmon_files/DRTO/ofra_sym_quants", ofra_sym_samples$salmon_ID, "quant.sf")
+
+#just renames files to 132-166, need to have that in my metadata sheet as well
+names(ofra_sym_quant) = paste0("sample", 227:257)
+  all(file.exists(ofra_sym_quant))
+
+#read in transcript to gene sheet that was modified from list of transcripts from transcriptome
+ofra_sym_tx2genes=read.csv("C:/Users/erin_/OneDrive - Texas State University/GitHub/symb_tgs/CY103_t_g.csv")
+  
+#import
+ofra_sym_txi = tximport(ofra_sym_quant, type = "salmon", tx2gene = ofra_sym_tx2genes, countsFromAbundance = "lengthScaledTPM")
+
+head(ofra_sym_txi$counts)
+
+ofra_sym_counts <- as.data.frame(ofra_sym_txi$counts)
+
+write.csv(ofra_sym_counts, file = "C:/Users/erin_/OneDrive - Texas State University/GitHub/DRTO_FDEP/R/ofra_sym_counts.csv",quote = FALSE)
+
+```
+
+# next steps: figure out, DESeq2, rmRNAseq, or limma??
+# I think I can use DESeq2 for DRTO bc all samples are represented at both time points
+# https://www.protocols.io/view/deseq2-for-time-series-dajh2cj6.html
+# https://www.protocols.io/view/deseq2-for-time-series-dm6gp34mdvzp/v1
+
+## maybe run DESeq just to get LFC outputs for GOMWU, then glmmseq for actual models?
+
+# glmmSeq actually let's you do mixed models
+# https://cran.r-project.org/web/packages/glmmSeq/vignettes/glmmSeq.html
+
+```{r glmmSeq CNAT}
+# only want to run with initial time point and then June when they were all sampled again
+# metadata is cnat_samples
+# count data is cnat_counts generated above
+
+# first calculate dispersions with DESeq
+dds <- DESeqDataSetFromTximport(txi = cnat_txi, colData = metadata, design = ~ 1)
+dds <- DESeq(dds)
+dispersions <- setNames(dispersions(dds), rownames(txi$counts))
+
+# estimate size factors with DESeq?
+sizeFactors <- estimateSizeFactorsForMatrix(counts)
+
+# now fit model
+# code time point (exposure) 
+#gene expression ~ time + response + (1 | patient)
+results <- glmmSeq(~ sample_month * tissue_type + (1 | colony_ID),
+                   countdata = cnat_counts,
+                   metadata = cnat_samples,
+                   dispersion = dispersions,
+                   progress = TRUE)
+
+## should spit out coefficient for each gene for each variable??
+## would I be able to run post hocs to then get pairwise to look at like pre-disease healthy, and post disease healthy, etc.
+
+```

@@ -1,0 +1,506 @@
+
+
+## start with 5 random samples
+
+DT25_OFRA_2H_Sept_2021_S227
+DT28_OFRA_1H_Febr_2022_S303
+DT28_OFRA_2H_Febr_2022_S304
+DT25_OFRA_2H_June_2022_S316
+DT26_OFRA_3D_August_2022_S281
+
+
+# first, set up kraken filtering using genome database I built previously and found to work best (i.e. didn't reduce busco to 60%)
+
+vi kraken.sh
+i
+#!/bin/bash
+#SBATCH --job-name=krak_ofra
+#SBATCH -N 1
+#SBATCH -t 1-24:00
+#SBATCH --partition=shared
+#SBATCH --mem=50G
+#SBATCH --mail-type=end
+#SBATCH --mail-type=fail
+#SBATCH --mail-user=vwk8@txstate.edu
+#SBATCH --open-mode=append
+#SBATCH -o kraken_%j.out
+#SBATCH -e kraken_%j.err
+
+#for loop to run kraken filtering on all pairs in the folder
+# this code assumes you are already in the directory that contains the reads
+for infile in *R1_cln.fastq
+	do
+	echo "working with sample $infile"
+	base=$(basename ${infile} _R1_cln.fastq)
+	infile2=${base}_R2_cln.fastq
+	echo "Now running kraken"
+	/home/vwk8/miniconda3/envs/RNAseq/bin/kraken2-2.0.8-beta/kraken2 --db /home/vwk8/miniconda3/envs/RNAseq/bin/krakenDB_gen ${base}_R1_cln.fastq ${base}_R2_cln.fastq --threads 16 --paired --classified-out ${base}_contam#.fastq --unclassified-out ${base}_unclass#.fastq --report ${base}_krakenDB.report --output ${base}_krakenDB.out
+	done
+	echo "Dunzo"
+
+# Now run bbsplit on these kraken-filtered files
+
+#!/bin/bash
+#SBATCH --job-name=bbs_ofra
+#SBATCH -N 1
+#SBATCH -t 1-24:00
+#SBATCH --partition=shared
+#SBATCH --mem=100G
+#SBATCH --mail-type=end
+#SBATCH --mail-type=fail
+#SBATCH --mail-user=vwk8@txstate.edu
+#SBATCH -o bbsplit_%j.out
+#SBATCH -e bbsplit_%j.err
+PATH=$PATH:/home/vwk8/miniconda3/envs/RNAseq/bin/
+DIR=/home/vwk8/transcriptomes/symbiont
+for FILE in *_unclass_1.fastq; do
+        echo ${FILE}
+        SAMP=$(basename -s _unclass_1.fastq $FILE)
+        echo $SAMP
+
+/home/vwk8/miniconda3/envs/RNAseq/bin/bbsplit.sh in1=${SAMP}_unclass_1.fastq in2=${SAMP}_unclass_2.fastq ref=${DIR}/Smic_Aranda2016/Smic.transcriptomeRef.cov5.fa,${DIR}/SymA_Y106_Shoguchi2018.fasta,${DIR}/Baenigmaticum_Parkinson2016/aenig_assembly_longest_250.fa,${DIR}/Bminutum_Parkinson2016/min_assembly_longest_250.fa,${DIR}/Bpseudominutum_Parkinson2016/pmin_assembly_longest_250.fa,${DIR}/Bpsygmophilum_Parkinson2016/psyg_assembly_longest_250.fa,${DIR}/Cgoreaui_Davies2016/davies_cladeC_feb.fasta,${DIR}/Clado_spp_Y103_Shoguchi2018.fasta,${DIR}/Dtrenchii_Bellantuono2019/Dtrenchii_rnaseq_assembly_v1.0.fasta basename=${SAMP}_%.fasta refstats=${SAMP}_stats.txt outu1=${SAMP}_bboutu_R1.fasta outu2=${SAMP}_bboutu_R2.fasta
+done
+
+## Example output
+
+#name	%unambiguousReads	unambiguousMB	%ambiguousReads	ambiguousMB	unambiguousReads	ambiguousReads	assignedReads	assignedBases
+davies_cladeC_feb	3.60519	396.473023	0.19431	20.848373	2726910	146974	2727610	396575645
+Clado_spp_Y103_Shoguchi2018	1.86519	204.698604	0.52104	57.234988	1410802	394108	1760738	255469420
+SymA_Y106_Shoguchi2018	0.18191	19.174854	0.27586	30.527045	137596	208656	137918	19218300
+min_assembly_longest_250	0.05243	5.681959	0.28547	31.288150	39660	215922	254834	36891425
+pmin_assembly_longest_250	0.03968	4.304852	0.27456	30.108130	30016	207670	30016	4304852
+Dtrenchii_rnaseq_assembly_v1.0	0.02030	1.963959	0.01572	1.537693	15356	11892	22866	2963209
+psyg_assembly_longest_250	0.01388	1.441739	0.11481	12.534180	10496	86838	33130	4693696
+aenig_assembly_longest_250	0.01329	1.208573	0.10887	11.740160	10054	82344	12008	1469842
+Smic.transcriptomeRef.cov5	0.00819	0.610221	0.00796	0.712988	6194	6018	11422	1207923
+
+
+DT25_OFRA_2H_June_2022_S316_bboutu_R1.fasta
+DT25_OFRA_2H_June_2022_S316_bboutu_R2.fasta
+DT25_OFRA_2H_Sept_2021_S227_bboutu_R1.fasta
+DT25_OFRA_2H_Sept_2021_S227_bboutu_R2.fasta
+DT26_OFRA_3D_August_2022_S281_bboutu_R1.fasta
+DT26_OFRA_3D_August_2022_S281_bboutu_R2.fasta
+DT28_OFRA_1H_Febr_2022_S303_bboutu_R1.fasta
+DT28_OFRA_1H_Febr_2022_S303_bboutu_R2.fasta
+DT28_OFRA_2H_Febr_2022_S304_bboutu_R1.fasta
+DT28_OFRA_2H_Febr_2022_S304_bboutu_R2.fasta
+
+
+vi trinity.sh
+i
+
+#!/bin/bash
+#SBATCH --job-name=Trin_ofra
+#SBATCH -N 1
+#SBATCH -t 14-24:00
+#SBATCH --partition=himem
+#SBATCH --mem=300G
+#SBATCH --mail-type=end
+#SBATCH --mail-type=fail
+#SBATCH --mail-user=vwk8@txstate.edu
+#SBATCH -o trinity_%j.out
+#SBATCH -e trinity_%j.err
+
+Trinity --normalize_reads --seqType fa --grid_node_CPU 21 --grid_node_max_memory 400G --max_memory 400G --SS_lib_type FR --left DT25_OFRA_2H_June_2022_S316_bboutu_R1.fasta,DT25_OFRA_2H_Sept_2021_S227_bboutu_R1.fasta,DT26_OFRA_3D_August_2022_S281_bboutu_R1.fasta,DT28_OFRA_1H_Febr_2022_S303_bboutu_R1.fasta,DT28_OFRA_2H_Febr_2022_S304_bboutu_R1.fasta --right DT25_OFRA_2H_June_2022_S316_bboutu_R2.fasta,DT25_OFRA_2H_Sept_2021_S227_bboutu_R2.fasta,DT26_OFRA_3D_August_2022_S281_bboutu_R2.fasta,DT28_OFRA_1H_Febr_2022_S303_bboutu_R2.fasta,DT28_OFRA_2H_Febr_2022_S304_bboutu_R2.fasta --CPU 25 --output trinity_out_dir
+
+# Now quality stats
+
+/home/vwk8/miniconda3/envs/RNAseq/opt/trinity-2.9.1/util/TrinityStats.pl Trinity.fasta
+
+################################
+## Counts of transcripts, etc.
+################################
+Total trinity 'genes':  503544
+Total trinity transcripts:      766256
+Percent GC: 41.65
+########################################
+Stats based on ALL transcript contigs:
+########################################
+        Contig N10: 3467
+        Contig N20: 2206
+        Contig N30: 1452
+        Contig N40: 949
+        Contig N50: 649
+        Median contig length: 311
+        Average contig: 527.29
+        Total assembled bases: 404040149
+#####################################################
+## Stats based on ONLY LONGEST ISOFORM per 'GENE':
+#####################################################
+        Contig N10: 2810
+        Contig N20: 1442
+        Contig N30: 791
+        Contig N40: 539
+        Contig N50: 412
+        Median contig length: 278
+        Average contig: 418.71
+        Total assembled bases: 210841412
+
+vi busco.sh
+i
+#!/bin/bash
+#SBATCH --job-name=busco_ofav
+#SBATCH -N 1
+#SBATCH -t 6-24:00
+#SBATCH --partition=shared
+#SBATCH --mem=150G
+#SBATCH --mail-type=end
+#SBATCH --mail-user=vwk8@txstate.edu
+#SBATCH -o busco_%j.out
+#SBATCH -e busco_%j.err
+
+busco -i Trinity.fasta -l /home/vwk8/miniconda3/envs/RNAseq/bin/busco_downloads/lineages/metazoa_odb10 -o busco_output_raw -m transcriptome --offline
+
+	***** Results: *****
+
+	C:95.2%[S:32.2%,D:63.0%],F:3.2%,M:1.6%,n:954	   
+	908	Complete BUSCOs (C)			   
+	307	Complete and single-copy BUSCOs (S)	   
+	601	Complete and duplicated BUSCOs (D)	   
+	31	Fragmented BUSCOs (F)			   
+	15	Missing BUSCOs (M)			   
+	954	Total BUSCO groups searched
+
+## Now running through remaining txome assembly steps (minus master coral database)
+
+#select longest isoform
+/home/vwk8/miniconda3/envs/RNAseq/opt/trinity-2.9.1/util/misc/get_longest_isoform_seq_per_trinity_gene.pl Trinity.fasta > processed_transcriptome_ofra.fa
+
+#An index of the metatranscriptome assembly is created with [cdbfasta]
+/home/vwk8/miniconda3/envs/RNAseq/bin/cdbfasta-master/cdbfasta Trinity.fasta
+
+#Extract the longest open reading frame from each contig and then generate its predicted peptide sequence using [TransDecoder]
+###this should remove rRNAs and tRNAs, as they are not coding typically
+## and is identifying isoforms
+/home/vwk8/miniconda3/envs/RNAseq/bin/TransDecoder-TransDecoder-v5.7.1/TransDecoder.LongOrfs -t processed_transcriptome_ofra.fa
+/home/vwk8/miniconda3/envs/RNAseq/bin/TransDecoder-TransDecoder-v5.7.1/TransDecoder.Predict -t processed_transcriptome_ofra.fa
+# Rename the resulting .pep file to end in .fa
+mv processed_transcriptome_ofra.fa.transdecoder.pep processed_transcriptome_ofra.transdecoder.fa
+
+#similar sequences are removed with cdhit
+/home/vwk8/miniconda3/envs/RNAseq/bin/cdhit-master/cd-hit -i processed_transcriptome_ofra.transdecoder.fa -o reference_proteome.fa
+# This reference proteome is now ready for Orthofinder
+
+#~~~~~ Step 4: Make an alignable transcriptome~~~~~~~~~~~~
+#Use the reference proteome to create an alignable transcriptome:
+grep ">" reference_proteome.fa > proteome_names.txt
+sed 's/.p/\t/' proteome_names.txt > proteome_names_format.txt
+awk '{print $1}'  proteome_names_format.txt > contigs_to_extract.txt
+sed 's/^.//g' contigs_to_extract.txt > contigs_list.txt
+
+cat contigs_list.txt | /home/vwk8/miniconda3/envs/RNAseq/bin/cdbfasta-master/cdbyank Trinity.fasta.cidx > final_coral_reference_transcriptome.fa
+
+/home/vwk8/miniconda3/envs/RNAseq/opt/trinity-2.9.1/util/TrinityStats.pl final_coral_reference_transcriptome.fa
+################################
+## Counts of transcripts, etc.
+################################
+Total trinity 'genes':  55299
+Total trinity transcripts:      55299
+Percent GC: 43.67
+########################################
+Stats based on ALL transcript contigs:
+########################################
+        Contig N10: 5146
+        Contig N20: 3791
+        Contig N30: 2999
+        Contig N40: 2432
+        Contig N50: 1947
+
+        Median contig length: 603
+        Average contig: 1134.68
+        Total assembled bases: 62746461
+
+vi busco_final.sh
+i
+#!/bin/bash
+#SBATCH --job-name=busco_ofrafinal
+#SBATCH -N 1
+#SBATCH -t 6-24:00
+#SBATCH --partition=shared
+#SBATCH --mem=150G
+#SBATCH --mail-type=end
+#SBATCH --mail-user=vwk8@txstate.edu
+#SBATCH -o busco_%j.out
+#SBATCH -e busco_%j.err
+
+busco -i final_coral_reference_transcriptome.fa -l /home/vwk8/miniconda3/envs/RNAseq/bin/busco_downloads/lineages/metazoa_odb10 -o busco_output_final -m transcriptome --offline
+
+# BUSCO was run in mode: euk_tran
+
+	***** Results: *****
+
+	C:87.0%[S:83.2%,D:3.8%],F:5.2%,M:7.8%,n:954	   
+	830	Complete BUSCOs (C)			   
+	794	Complete and single-copy BUSCOs (S)	   
+	36	Complete and duplicated BUSCOs (D)	   
+	50	Fragmented BUSCOs (F)			   
+	74	Missing BUSCOs (M)			   
+	954	Total BUSCO groups searched	
+
+# now can move onto additional contamination removal step via protein blast with 17 Symbiodiniaceae proteome files #############
+
+vi contam_prot_blast.sh
+
+#!/bin/bash
+#SBATCH --job-name=blast_ofra
+#SBATCH -N 1
+#SBATCH -t 13-24:00
+#SBATCH --partition=himem
+#SBATCH --mem=500G
+#SBATCH --mail-type=end
+#SBATCH --mail-type=fail
+#SBATCH --mail-user=vwk8@txstate.edu
+#SBATCH -o prot_remov_%j.out
+#SBATCH -e prot_remov_%j.err
+
+blastx -query final_coral_reference_transcriptome.fa -db ~/proteomes/SymbProts_db -outfmt "6 qseqid evalue pident length" -max_target_seqs 5 -out symbiont_hits.txt
+
+# Modified from Astrangia pub, now we compare against the symbiont reference proteome and pull out seqs with >80% identity and >100bp length match
+awk '{if ($3 > 80) print $1,$2,$4 }' symbiont_hits.txt > symbiont_contigs_80.txt
+awk '{if ($3 > 100) print $1}' symbiont_contigs_80.txt > final_symbiont_contigs.txt
+awk '!a[$0]++' final_symbiont_contigs.txt > final_symbiont_contigs_nodup.txt
+
+#Then pull the reads using BBmap
+filterbyname.sh in=final_coral_reference_transcriptome.fa out=final_blasted_ofra_transcriptome.fa names=final_symbiont_contigs_nodup.txt
+
+#now check quality, completeness
+/home/vwk8/miniconda3/envs/RNAseq/opt/trinity-2.9.1/util/TrinityStats.pl final_blasted_ofra_transcriptome.fa
+
+################################
+## Counts of transcripts, etc.
+################################
+Total trinity 'genes':  53359
+Total trinity transcripts:      53359
+Percent GC: 43.46
+########################################
+Stats based on ALL transcript contigs:
+########################################
+        Contig N10: 5178
+        Contig N20: 3822
+        Contig N30: 3040
+        Contig N40: 2470
+        Contig N50: 1988
+        Median contig length: 610
+        Average contig: 1152.27
+        Total assembled bases: 61483943
+
+#get output file of all the transcripts in the final filtered and assembled transcriptome, will use this in R
+fgrep ">" final_blasted_ofra_transcriptome.fa > OFRA_transcripts.txt
+#open with excel, ctrl+f and replace to remove the carrots it pulls out, and separate out the columns
+#renamed to OFRA_t_g to just have gene and transcript (it's just the initial name from each row copied for gene & transcript)
+
+#~~~~STEP 5~~~~~
+#annotate this final transcriptome now
+
+vi prot_blast_annot.sh
+i
+#!/bin/bash
+#SBATCH --job-name=ann_ofra
+#SBATCH -N 1
+#SBATCH -t 6-24:00
+#SBATCH --partition=himem
+#SBATCH --mem=500G
+#SBATCH --mail-type=end
+#SBATCH --mail-type=fail
+#SBATCH --mail-user=vwk8@txstate.edu
+#SBATCH -o protblast_%j.out
+#SBATCH -e protblast_%j.err
+
+/home/vwk8/miniconda3/envs/RNAseq/bin/ncbi-blast-2.15.0+/bin/blastx -query final_blasted_ofra_transcriptome.fa -db /home/vwk8/miniconda3/envs/RNAseq/bin/ncbi-blast-2.15.0+/bin/uniprot_db -outfmt "6 sseqid qseqid evalue" -max_target_seqs 1 -out annotated_coral_reference_transcriptome.txt
+
+#################Start aligning reads to reference transcriptomes###############
+# BBSplit: Sort coral and Symbiodiniaceae reads
+#Our eukaryotic reads contain sequences that originate from both the coral host species as well as their intracellular Symbiodiniaceae. There are four predominant Symbiodiniaceae genera that form symbioses with the corals in our study, so we will use [BBMap](https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/bbmap-guide/) to map reads to the coral host transcriptome, as well as Symbiodinium, Breviolum, Cladocopium, and Durusdinium transcriptomes, prior to read quantification. BBMap #is splice-aware global aligner for DNA and RNA sequencing reads, and BBsplit uses BBMap to map reads to multiple transcriptomes at once and determines which transcriptome each reads matches to best.
+
+## want to use one representative transcriptome for each genera of Symbiodiniaceae, and prefer using ones assembled from pure culture (as opposed to from in hospite/from coral tissue):
+Clade A: Smic Aranda et al. 2016 (both options from pure culture, this one assoc. with Cnidarians more)
+Clade B: Bminutum, Parkinson 2016 (most known to associate with warm water corals of the 4 available from this pub)
+Clade C: Clado_spp_Y103, Shoguchi et al. 2018 (from clam but from culture, C goreaui is from SSID and not great quality)
+Clade D: D trenchii, Bellantuono 2019 (only option)
+
+vi bbsplit.sh
+i
+#!/bin/bash
+#SBATCH --job-name=bbs_ofraDRTO
+#SBATCH -N 1
+#SBATCH -t 4-24:00
+#SBATCH --partition=himem
+#SBATCH --mem=250G
+#SBATCH --mail-type=end
+#SBATCH --mail-type=fail
+#SBATCH --mail-user=vwk8@txstate.edu
+#SBATCH -o bbsplit_%j.out
+#SBATCH -e bbsplit_%j.err
+PATH=$PATH:/home/vwk8/miniconda3/envs/RNAseq/bin/
+DIR=/home/vwk8/transcriptomes
+for FILE in *_R1_cln.fastq; do
+        echo ${FILE}
+        SAMP=$(basename -s _R1_cln.fastq $FILE)
+        echo $SAMP
+
+/home/vwk8/miniconda3/envs/RNAseq/bin/bbsplit.sh in1=${SAMP}_R1_cln.fastq in2=${SAMP}_R2_cln.fastq ref=${DIR}/DRTO_denovo/final_blasted_ofra_transcriptome.fa,${DIR}/symbiont/Dtrenchii_Bellantuono2019/Dtrenchii_rnaseq_assembly_v1.0.fasta,${DIR}/symbiont/Clado_spp_Y103_Shoguchi2018.fasta,${DIR}/symbiont/Bminutum_Parkinson2016/min_assembly_longest_250.fa,${DIR}/symbiont/Smic_Aranda2016/Smic.transcriptomeRef.cov5.fa basename=${SAMP}_%.fasta refstats=${SAMP}_stats.txt outu1=${SAMP}_bboutu_R1.fasta outu2=${SAMP}_bboutu_R2.fasta
+done
+
+#This will create one output for each file. The text file for ref stats can be downloaded and placed into BBSplit Statistics output file for all species. It will be used at bottom for Summary of Genus Averages.
+
+## for some reason this was taking wayyy longer on the himem node? Stopped after 4 days and re-running on shared node with 100G memory
+
+#From here, each file will need to be reformatted with BBMap program to split back into two separate fastq files for forward and reverse reads
+#first doing this for mcav files, will do symbiont ones later when running analysis on them
+
+# move coral aligned files to new directory within titled "salmon"
+
+vi bbmap.sh
+i
+#!/bin/bash
+#SBATCH --job-name=bbmap_ofra
+#SBATCH -N 1
+#SBATCH -t 2-24:00
+#SBATCH --partition=shared
+#SBATCH --mem=50G
+#SBATCH --mail-type=end
+#SBATCH --mail-type=fail
+#SBATCH --mail-user=vwk8@txstate.edu
+#SBATCH -o bbmap_%j.out
+#SBATCH -e bbmap_%j.err
+PATH=$PATH:/home/vwk8/miniconda3/envs/RNAseq/bin/
+for FILE in *_transcriptome.fasta; do
+        echo ${FILE}
+        SAMP=$(basename -s .fasta $FILE)
+        echo $SAMP
+/home/vwk8/miniconda3/envs/RNAseq/bin/bbmap/reformat.sh in=${SAMP}.fasta out1=${SAMP}_1.fq out2=${SAMP}_2.fq
+done
+
+###### Salmon: Read Quantification ###################
+#Salmon (https://salmon.readthedocs.io/en/latest/salmon.html#) is a tool built for transcript quantification. It uses two phases; indexing and quantification, to map samples. The first step, indexing, is independent of the reads and requires a reference transcript to build an index. Code for that is as follows:
+
+## Index Building for Host Transcriptomes
+#For the host indexes, we can keep kmer values at a standard as we are confident in the transcriptomes we have just built and the quality of the transcriptome.
+# ofra index
+#ran very quickly
+/home/vwk8/miniconda3/envs/RNAseq/bin/salmon index -t /home/vwk8/transcriptomes/DRTO_denovo/final_blasted_ofra_transcriptome.fa -i OFRA_transcriptome_index.fa
+
+## Mapping Reads: Use Salmon for quasi-mapping results
+#eventually do for dominant symbiont as well
+[Salmon](https://salmon.readthedocs.io/en/latest/salmon.html#) is a tool built for transcript quantification. It uses two phases; indexing and quantification, to map samples. The second phase: quantification, using quasi-mapping program to map samples to index. Quasi-mapping assumes a generally small file and increased number of repeats in reference sequences. It also takes into account splicing because a transcriptome is assumed to be used for the index.
+
+#  move host-aligned filtered files into you salmon directory
+#  since we'll be running the same command on each sample, the simplest way to automate this process is with a simple shell script
+#  the script loops through each sample and invokes salmon using fairly barebone options
+# -i  tells salmon where to find the index
+# -l A tells salmon that it should automatically determine the library type of the sequencing reads (stranded vs. unstranded etc.)
+# -1 and -2 tell salmon where to find the left and right reads for this sample (notice, salmon will accept gzipped FASTQ files directly)
+# -p 8 tells salmon to make use of 8 threads
+# -o specifies the directory where salmon's quantification results should be written
+
+# Loop for Ofra
+vi salmon_loop.sh
+
+#!/bin/bash
+#SBATCH --job-name=salmon_ofra
+#SBATCH -N 1
+#SBATCH -t 4-24:00
+#SBATCH --partition=himem
+#SBATCH --mem=500G
+#SBATCH --mail-type=end
+#SBATCH --mail-type=fail
+#SBATCH --mail-user=vwk8@txstate.edu
+#SBATCH -o salmon_reads_%j.out
+#SBATCH -e salmon_reads_%j.err
+PATH=$PATH:/home/vwk8/miniconda3/envs/RNAseq/bin/salmon
+for FILE in *_1.fq; do
+        echo ${FILE}
+        SAMP=$(basename -s _1.fq $FILE)
+        echo $SAMP
+        DIR=/home/vwk8/transcriptomes/DRTO_denovo
+
+/home/vwk8/miniconda3/envs/RNAseq/bin/salmon quant -i ${DIR}/OFRA_transcriptome_index.fa -l A \
+				-1 ${SAMP}_1.fq \
+				-2 ${SAMP}_2.fq \
+				-p 8 --validateMappings -o quants/${SAMP}_quant
+done
+
+
+# now start on symbiont files
+# all are Clade C
+
+#!/bin/bash
+#SBATCH --job-name=bbm_ofraC
+#SBATCH -N 1
+#SBATCH -t 2-24:00
+#SBATCH --partition=shared
+#SBATCH --mem=50G
+#SBATCH --mail-type=end
+#SBATCH --mail-type=fail
+#SBATCH --mail-user=vwk8@txstate.edu
+#SBATCH -o bbmap_%j.out
+#SBATCH -e bbmap_%j.err
+PATH=$PATH:/home/vwk8/miniconda3/envs/RNAseq/bin/
+for FILE in *.fasta; do
+        echo ${FILE}
+        SAMP=$(basename -s .fasta $FILE)
+        echo $SAMP
+/home/vwk8/miniconda3/envs/RNAseq/bin/bbmap/reformat.sh in=${SAMP}.fasta out1=${SAMP}_1.fq out2=${SAMP}_2.fq
+done
+
+# Loop for symC
+vi salmon.sh
+
+#!/bin/bash
+#SBATCH --job-name=salm_orC
+#SBATCH -N 1
+#SBATCH -t 4-24:00
+#SBATCH --partition=himem
+#SBATCH --mem=500G
+#SBATCH --mail-type=end
+#SBATCH --mail-type=fail
+#SBATCH --mail-user=vwk8@txstate.edu
+#SBATCH -o salmon_%j.out
+#SBATCH -e salmon_%j.err
+PATH=$PATH:/home/vwk8/miniconda3/envs/RNAseq/bin/salmon
+for FILE in *_1.fq; do
+        echo ${FILE}
+        SAMP=$(basename -s _1.fq $FILE)
+        echo $SAMP
+        DIR=/home/vwk8/transcriptomes/symbiont
+
+/home/vwk8/miniconda3/bin/salmon quant -i ${DIR}/C_sppY103_index -l A \
+				-1 ${SAMP}_1.fq \
+				-2 ${SAMP}_2.fq \
+				-p 8 --validateMappings -o quants/${SAMP}_quant
+done
+
+# % mapping rate
+
+[2024-12-03 12:21:54.310] [jointLog] [info] Mapping rate = 65.8784%
+[2024-12-03 12:22:59.960] [jointLog] [info] Mapping rate = 63.3903%
+[2024-12-03 12:23:11.803] [jointLog] [info] Mapping rate = 58.55%
+[2024-12-03 12:24:43.373] [jointLog] [info] Mapping rate = 65.3711%
+[2024-12-03 12:25:05.511] [jointLog] [info] Mapping rate = 65.0245%
+[2024-12-03 12:25:37.936] [jointLog] [info] Mapping rate = 64.1084%
+[2024-12-03 12:27:11.877] [jointLog] [info] Mapping rate = 65.4526%
+[2024-12-03 12:28:49.211] [jointLog] [info] Mapping rate = 65.5022%
+[2024-12-03 12:29:36.360] [jointLog] [info] Mapping rate = 64.5489%
+[2024-12-03 12:30:48.893] [jointLog] [info] Mapping rate = 63.059%
+[2024-12-03 12:31:39.951] [jointLog] [info] Mapping rate = 62.5745%
+[2024-12-03 12:32:37.683] [jointLog] [info] Mapping rate = 65.2962%
+[2024-12-03 12:33:50.447] [jointLog] [info] Mapping rate = 65.6884%
+[2024-12-03 12:34:59.040] [jointLog] [info] Mapping rate = 62.3253%
+[2024-12-03 12:36:05.174] [jointLog] [info] Mapping rate = 58.896%
+[2024-12-03 12:36:30.160] [jointLog] [info] Mapping rate = 65.0779%
+[2024-12-03 12:37:10.900] [jointLog] [info] Mapping rate = 64.0386%
+[2024-12-03 12:38:25.200] [jointLog] [info] Mapping rate = 65.3153%
+[2024-12-03 12:39:10.312] [jointLog] [info] Mapping rate = 67.2131%
+[2024-12-03 12:39:58.850] [jointLog] [info] Mapping rate = 63.7168%
+[2024-12-03 12:40:30.030] [jointLog] [info] Mapping rate = 58.5927%
+[2024-12-03 12:41:08.572] [jointLog] [info] Mapping rate = 64.089%
+[2024-12-03 12:42:02.368] [jointLog] [info] Mapping rate = 64.5437%
+[2024-12-03 12:42:44.783] [jointLog] [info] Mapping rate = 65.9071%
+[2024-12-03 12:42:57.346] [jointLog] [info] Mapping rate = 50.1306%
+[2024-12-03 12:43:55.476] [jointLog] [info] Mapping rate = 64.9246%
+[2024-12-03 12:44:47.601] [jointLog] [info] Mapping rate = 66.9304%
+[2024-12-03 12:45:40.592] [jointLog] [info] Mapping rate = 64.3283%
+[2024-12-03 12:46:01.897] [jointLog] [info] Mapping rate = 64.5894%
+[2024-12-03 12:47:16.088] [jointLog] [info] Mapping rate = 65.8447%
+[2024-12-03 12:47:54.037] [jointLog] [info] Mapping rate = 64.4016%
