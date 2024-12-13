@@ -1,2 +1,2 @@
 # Host_Transcriptomic_Analyses
-host transcriptomic data/deliverables
+Host transcriptomic data/deliverables
