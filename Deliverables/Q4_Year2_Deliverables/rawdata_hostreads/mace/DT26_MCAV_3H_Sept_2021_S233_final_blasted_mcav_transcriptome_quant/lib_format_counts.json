@@ -1,0 +1,22 @@
+{
+    "read_files": "[ DT26_MCAV_3H_Sept_2021_S233_final_blasted_mcav_transcriptome_1.fq, DT26_MCAV_3H_Sept_2021_S233_final_blasted_mcav_transcriptome_2.fq]",
+    "expected_format": "ISF",
+    "compatible_fragment_ratio": 1.0,
+    "num_compatible_fragments": 32426565,
+    "num_assigned_fragments": 32426565,
+    "num_frags_with_concordant_consistent_mappings": 30547543,
+    "num_frags_with_inconsistent_or_orphan_mappings": 1889120,
+    "strand_mapping_bias": 0.9999683781620897,
+    "MSF": 0,
+    "OSF": 0,
+    "ISF": 30547543,
+    "MSR": 0,
+    "OSR": 0,
+    "ISR": 966,
+    "SF": 1111872,
+    "SR": 776282,
+    "MU": 0,
+    "OU": 0,
+    "IU": 0,
+    "U": 0
+}
