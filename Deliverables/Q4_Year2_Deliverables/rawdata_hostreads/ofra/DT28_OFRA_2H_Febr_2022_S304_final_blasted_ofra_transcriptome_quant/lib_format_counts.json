@@ -1,0 +1,22 @@
+{
+    "read_files": "[ DT28_OFRA_2H_Febr_2022_S304_final_blasted_ofra_transcriptome_1.fq, DT28_OFRA_2H_Febr_2022_S304_final_blasted_ofra_transcriptome_2.fq]",
+    "expected_format": "ISF",
+    "compatible_fragment_ratio": 1.0,
+    "num_compatible_fragments": 24139140,
+    "num_assigned_fragments": 24139140,
+    "num_frags_with_concordant_consistent_mappings": 21834274,
+    "num_frags_with_inconsistent_or_orphan_mappings": 2313299,
+    "strand_mapping_bias": 0.9999413800080365,
+    "MSF": 0,
+    "OSF": 0,
+    "ISF": 21834274,
+    "MSR": 0,
+    "OSR": 0,
+    "ISR": 1280,
+    "SF": 1694961,
+    "SR": 617058,
+    "MU": 0,
+    "OU": 0,
+    "IU": 0,
+    "U": 0
+}
