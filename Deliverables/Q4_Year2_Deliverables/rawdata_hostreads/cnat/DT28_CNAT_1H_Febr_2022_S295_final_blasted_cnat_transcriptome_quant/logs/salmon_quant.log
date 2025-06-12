@@ -1,0 +1,42 @@
+[2024-11-07 13:00:18.942] [jointLog] [info] setting maxHashResizeThreads to 8
+[2024-11-07 13:00:18.942] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2024-11-07 13:00:18.942] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2024-11-07 13:00:18.942] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2024-11-07 13:00:18.942] [jointLog] [info] parsing read library format
+[2024-11-07 13:00:18.942] [jointLog] [info] There is 1 library.
+[2024-11-07 13:00:18.942] [jointLog] [info] Loading pufferfish index
+[2024-11-07 13:00:18.942] [jointLog] [info] Loading dense pufferfish index.
+[2024-11-07 13:00:19.283] [jointLog] [info] done
+[2024-11-07 13:00:19.307] [jointLog] [info] Index contained 43,038 targets
+[2024-11-07 13:00:19.313] [jointLog] [info] Number of decoys : 0
+[2024-11-07 13:00:19.705] [jointLog] [info] Automatically detected most likely library type as ISF
+
+[2024-11-07 13:02:23.927] [jointLog] [info] Thread saw mini-batch with a maximum of 2.40% zero probability fragments
+[2024-11-07 13:02:23.972] [jointLog] [info] Thread saw mini-batch with a maximum of 2.66% zero probability fragments
+[2024-11-07 13:02:23.981] [jointLog] [info] Thread saw mini-batch with a maximum of 2.54% zero probability fragments
+[2024-11-07 13:02:23.990] [jointLog] [info] Thread saw mini-batch with a maximum of 2.58% zero probability fragments
+[2024-11-07 13:02:23.994] [jointLog] [info] Thread saw mini-batch with a maximum of 2.64% zero probability fragments
+[2024-11-07 13:02:24.010] [jointLog] [info] Thread saw mini-batch with a maximum of 2.42% zero probability fragments
+[2024-11-07 13:02:24.050] [jointLog] [info] Thread saw mini-batch with a maximum of 2.70% zero probability fragments
+[2024-11-07 13:02:24.075] [jointLog] [info] Thread saw mini-batch with a maximum of 2.52% zero probability fragments
+[2024-11-07 13:02:24.110] [jointLog] [info] Computed 35,984 rich equivalence classes for further processing
+[2024-11-07 13:02:24.110] [jointLog] [info] Counted 36,184,926 total reads in the equivalence classes 
+[2024-11-07 13:02:24.113] [jointLog] [info] Number of mappings discarded because of alignment score : 8,795,805
+[2024-11-07 13:02:24.113] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 5,460,526
+[2024-11-07 13:02:24.113] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2024-11-07 13:02:24.113] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 1,103,028
+[2024-11-07 13:02:24.113] [jointLog] [info] Mapping rate = 84.401%
+
+[2024-11-07 13:02:24.113] [jointLog] [info] finished quantifyLibrary()
+[2024-11-07 13:02:24.116] [jointLog] [info] Starting optimizer
+[2024-11-07 13:02:24.126] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2024-11-07 13:02:24.128] [jointLog] [info] iteration = 0 | max rel diff. = 12067.8
+[2024-11-07 13:02:24.110] [fileLog] [info] 
+At end of round 0
+==================
+Observed 42872645 total fragments (42872645 in most recent round)
+
+[2024-11-07 13:02:24.251] [jointLog] [info] iteration = 100 | max rel diff. = 5.79499e-08
+[2024-11-07 13:02:24.252] [jointLog] [info] Finished optimizer
+[2024-11-07 13:02:24.252] [jointLog] [info] writing output 
+

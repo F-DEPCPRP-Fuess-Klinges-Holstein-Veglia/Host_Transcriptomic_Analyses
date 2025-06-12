@@ -1,0 +1,11 @@
+{
+    "salmon_version": "1.10.3",
+    "index": "/home/vwk8/transcriptomes/DRTO_denovo/CNAT_transcriptome_index.fa",
+    "libType": "A",
+    "mates1": "DT28_CNAT_1D_June_2022_S263_final_blasted_cnat_transcriptome_1.fq",
+    "mates2": "DT28_CNAT_1D_June_2022_S263_final_blasted_cnat_transcriptome_2.fq",
+    "threads": "8",
+    "validateMappings": [],
+    "output": "quants/DT28_CNAT_1D_June_2022_S263_final_blasted_cnat_transcriptome_quant",
+    "auxDir": "aux_info"
+}
