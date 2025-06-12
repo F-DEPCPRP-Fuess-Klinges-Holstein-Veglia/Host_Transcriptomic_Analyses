@@ -1,0 +1,11 @@
+{
+    "salmon_version": "1.10.3",
+    "index": "/home/vwk8/transcriptomes/DRTO_denovo/OFRA_transcriptome_index.fa",
+    "libType": "A",
+    "mates1": "DT26_OFRA_2H_August_2022_S275_final_blasted_ofra_transcriptome_1.fq",
+    "mates2": "DT26_OFRA_2H_August_2022_S275_final_blasted_ofra_transcriptome_2.fq",
+    "threads": "8",
+    "validateMappings": [],
+    "output": "quants/DT26_OFRA_2H_August_2022_S275_final_blasted_ofra_transcriptome_quant",
+    "auxDir": "aux_info"
+}
