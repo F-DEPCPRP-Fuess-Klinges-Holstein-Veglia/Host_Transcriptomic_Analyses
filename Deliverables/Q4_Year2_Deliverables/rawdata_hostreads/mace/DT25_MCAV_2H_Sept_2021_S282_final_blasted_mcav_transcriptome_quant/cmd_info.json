@@ -1,0 +1,11 @@
+{
+    "salmon_version": "1.10.3",
+    "index": "/home/vwk8/transcriptomes/DRTO_denovo/MCAV_transcriptome_index.fa",
+    "libType": "A",
+    "mates1": "DT25_MCAV_2H_Sept_2021_S282_final_blasted_mcav_transcriptome_1.fq",
+    "mates2": "DT25_MCAV_2H_Sept_2021_S282_final_blasted_mcav_transcriptome_2.fq",
+    "threads": "8",
+    "validateMappings": [],
+    "output": "quants/DT25_MCAV_2H_Sept_2021_S282_final_blasted_mcav_transcriptome_quant",
+    "auxDir": "aux_info"
+}
