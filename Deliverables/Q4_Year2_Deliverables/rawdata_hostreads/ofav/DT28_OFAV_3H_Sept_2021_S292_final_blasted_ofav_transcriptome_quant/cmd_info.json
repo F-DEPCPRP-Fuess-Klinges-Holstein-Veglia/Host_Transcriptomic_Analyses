@@ -1,0 +1,11 @@
+{
+    "salmon_version": "1.10.3",
+    "index": "/home/vwk8/transcriptomes/DRTO_denovo/OFAV_transcriptome_index.fa",
+    "libType": "A",
+    "mates1": "DT28_OFAV_3H_Sept_2021_S292_final_blasted_ofav_transcriptome_1.fq",
+    "mates2": "DT28_OFAV_3H_Sept_2021_S292_final_blasted_ofav_transcriptome_2.fq",
+    "threads": "8",
+    "validateMappings": [],
+    "output": "quants/DT28_OFAV_3H_Sept_2021_S292_final_blasted_ofav_transcriptome_quant",
+    "auxDir": "aux_info"
+}
