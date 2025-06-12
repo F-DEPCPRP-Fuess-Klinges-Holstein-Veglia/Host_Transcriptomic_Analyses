@@ -1,0 +1,22 @@
+{
+    "read_files": "[ DT25_CNAT_1H_Sept_2021_S222_final_blasted_cnat_transcriptome_1.fq, DT25_CNAT_1H_Sept_2021_S222_final_blasted_cnat_transcriptome_2.fq]",
+    "expected_format": "ISF",
+    "compatible_fragment_ratio": 1.0,
+    "num_compatible_fragments": 28855734,
+    "num_assigned_fragments": 28855734,
+    "num_frags_with_concordant_consistent_mappings": 27363884,
+    "num_frags_with_inconsistent_or_orphan_mappings": 1506326,
+    "strand_mapping_bias": 0.9999336030164182,
+    "MSF": 0,
+    "OSF": 0,
+    "ISF": 27363884,
+    "MSR": 0,
+    "OSR": 0,
+    "ISR": 1817,
+    "SF": 924997,
+    "SR": 579512,
+    "MU": 0,
+    "OU": 0,
+    "IU": 0,
+    "U": 0
+}
