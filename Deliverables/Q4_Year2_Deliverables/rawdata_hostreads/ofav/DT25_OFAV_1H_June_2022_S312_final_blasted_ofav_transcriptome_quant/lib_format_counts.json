@@ -1,0 +1,22 @@
+{
+    "read_files": "[ DT25_OFAV_1H_June_2022_S312_final_blasted_ofav_transcriptome_1.fq, DT25_OFAV_1H_June_2022_S312_final_blasted_ofav_transcriptome_2.fq]",
+    "expected_format": "IU",
+    "compatible_fragment_ratio": 1.0,
+    "num_compatible_fragments": 27817035,
+    "num_assigned_fragments": 27817035,
+    "num_frags_with_concordant_consistent_mappings": 26597392,
+    "num_frags_with_inconsistent_or_orphan_mappings": 1539156,
+    "strand_mapping_bias": 0.6434016914139552,
+    "MSF": 0,
+    "OSF": 0,
+    "ISF": 17112807,
+    "MSR": 0,
+    "OSR": 0,
+    "ISR": 9484585,
+    "SF": 854007,
+    "SR": 685149,
+    "MU": 0,
+    "OU": 0,
+    "IU": 0,
+    "U": 0
+}
